@@ -45,7 +45,7 @@ class Dog:
 
 doug = Dog("doug")
 json_doug = doug.json
-new_doug = json.loads(json_doug)
+new_doug = Dog.from_json(json_doug)
 ```
 Of course, this is not safe for everyday use.
 
@@ -79,6 +79,7 @@ root_logger.setLevel(logging.DEBUG)
         ```
     * yaml
     * Syslog
+
     ```python
         handler = logging.handlers.SysLogHandler(address 
 = '/dev/log')
@@ -89,8 +90,30 @@ root_logger.setLevel(logging.DEBUG)
 
 ##threading/subprocessing
 ###Start it
-* So I heard you like map
-* What about parallel map ?
+Work with multiprocessing (CPU bound) or threading (IO bound).
+All the boring stuff you could ever need
+
+```python
+#either from multiprocessing or threading
+q = Queue()
+e = Event()
+def wo():
+    print("dead lumberjack")
+p = Process(target=wo)
+p.start()
+t = Thread(target=wo)
+t.start()
+```
+
+Also shared memory
+
+```python
+v = Value()
+a = Array()
+```
+
+###Push it
+I heard you like to map stuff, you can do that with a thread or a process pool.
 
 ```python
 def worker(number):
@@ -101,29 +124,6 @@ p = Pool(100)
 p.map(worker, range(3000))
 ```
 
-Work with multiprocessing (CPU bound) or threading (IO bound).
-
-###Push it
-All the boring stuff you could ever need
-
-```python
-q = Queue()
-e = Event()
-def wo():
-    print("dead lumberjack")
-p = Process(target=f)
-p.start()
-t = Thread(target=f)
-t.start()
-```
-
-Also shared memory
-
-```python
-v = Value()
-a = Array()
-```
-ANDMORE!
 
 #External modules
 
@@ -136,7 +136,7 @@ ANDMORE!
 
 ```python
 url = "https://en.wikipedia.org/wiki/Monty_Python"
-requests.get()
+requests.get(url)
 payload = {'silly-walk': ['step', 'step', 'step'
 , 'quarter-turn']}
 
@@ -144,24 +144,27 @@ url = "http://ministry-of-silly-walk"
 requests.post(url, payload)
 ```
 
+
+###Push it
 * Cookie and authentication for http.
 * Act a bit like a browser
 
 ```python
 with request.Session() as session:
     session.get("http://google.ch")
+    #who would like a cookie jar
+    #http://docs.python.org/2/library/cookielib.html
+    session.cookies
 ```
 
-###Push it
 * HTTP authentication
 
 * oauth2 authentication ? yes sir
-
-Or twisted ?
+https://github.com/maraujop/requests-oauth
 
 ##sh
 ###Start it
-subprocess sucks
+Let's clone a git depot:
 
 ```python
 from sh import git
@@ -175,7 +178,21 @@ from sh import ps
 process = ps('-aux')
 print(process)
 ```
+
 ###Push it
+
+Piping two commands is easy to
+
+```python
+from sh import sort, du
+sort(du(-h), '-h')
+```
+
+Passing string as stdin
+
+```python
+sort(_in='\n'.join(["the", "big", "black", "cat"]))
+```
 
 ##Progressbar
 ###Start it
@@ -194,7 +211,6 @@ for i in progress(range(30000)):
     longactios(i)
 ```
 
-###Push it
 will use 'len' to calculate the percentage, you can specify it (if you use generator for example)
 
 ```python
@@ -203,7 +219,13 @@ for i in count(300):
     sleep(300)
 ```
 
-You could even combine map with progressbar
+###Push it
+
+You could even combine map with progressbar.
+
+```python
+
+```
 
 even with a bouncing bar:
 
@@ -214,7 +236,8 @@ for i in pbar((i for i in range(180))):
     time.sleep(0.05)
 ```
 
-###fabric
+##fabric
+###Start it
 ssh on lamas steroid.
 you wanna do a uname :
 
@@ -227,6 +250,28 @@ then
 
 ```sh
     fab uname -h boy
+```
+
+###Push it
+you can define role, that are bunch of server on which to apply rule
+```python
+
+```
+
+pretty simple to use with vagrant 
+```python
+def prod():
+def vagrant():
+```
+
+for test
+
+```sh
+fab vagrant deploy
+```
+
+```sh
+fab prod deploy
 ```
 
 ##Blackmamba
@@ -244,6 +289,7 @@ request("http://google.ch", 80)
 ```
 ###Push it 
 let's generate 3000 request to a given host
+
 ```python
 def request(host, port):
     yield blackmamba.connect(host, port)
@@ -266,7 +312,14 @@ you don't want to learn to write
 * much better
 
 ###Push it
-modify dom elements
+modify dom content
+```python
+dom.text = "Ich bin ein berliner"
+```
+
+add a subtree
+```python
+```
 
 ##SQLAlchemy
 ###Start it
@@ -278,22 +331,32 @@ Let's do the connection first
 ```python
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
-#and then
+```
+###and then
+
+```python
 class User(Base):
      __tablename__ = 'users'
 
      id = Column(Integer, primary_key=True)
      name = Column(String)
      fullname = Column(String)
-     password = Column(String)
+     password = Column(String(50))
+     salt = Column(String(10))
 
      def __init__(self, name, fullname, password):
          self.name = name
          self.fullname = fullname
          self.password = password
 ```
+very simple example
+
 ###Push it
-FIXME
+join
+
+one to one 
+
+A lot more in the documentation
 ##scapy
 ###Start it
 * packet forging
@@ -319,7 +382,8 @@ now.date
 assert (now - now) = 0
 ```
 ###Push it
-* humanize is great, to impress on a webapp
+* humanize is great, to have a relative human readable date
+
 ##Flask
 ###
 * Light webframework
@@ -346,8 +410,53 @@ def index(db):
 ###Push it
 Doc is 
 
-#Push everything
+###Push everything
 https://crate.io/
 
 ###Biography
 
+####json
+http://docs.python.org/3/library/json.html
+
+####logging
+http://docs.python.org/3/library/logging.html
+
+####threading
+http://docs.python.org/3/library/threading.html
+
+####subprocessing
+http://docs.python.org/3/library/multiprocessing.html
+
+####requests
+http://docs.python-requests.org/en/latest/
+
+###Biography2
+
+####sh
+http://amoffat.github.io/sh/
+
+####Progressbar
+https://code.google.com/p/python-progressbar/
+
+####fabric
+http://docs.fabfile.org/en/1.6/
+
+####Blackmamba
+http://rootfoo.org/blackmamb
+
+###Biography3
+
+####Beautifulsoup
+http://www.crummy.com/software/BeautifulSoup/
+
+####SQLAlchemy
+http://docs.sqlalchemy.org/en/rel_0_8/
+
+####scapy
+http://www.secdev.org/projects/scapy/
+
+####Arrow
+http://crsmithdev.com/arrow/
+
+####Flask
+http://flask.pocoo.org/
