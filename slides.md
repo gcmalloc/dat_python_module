@@ -29,6 +29,7 @@ with open('myfile.json') as f:
 ```
 
 ###Push it
+
 ```python
 class Dog:
     def __init__(self, name):
@@ -77,8 +78,7 @@ root_logger.setLevel(logging.DEBUG)
 * multiple output 
     * plain text
     * json
-        ```python
-        ```
+
     * yaml
     * Syslog
 
@@ -226,13 +226,17 @@ for i in count(300):
 You could even combine map with progressbar.
 
 ```python
-
+p = Pool
+for proxy in progress(p.imap(has_body, domain)):
+    #do something with the result
+    pass
 ```
 
 even with a bouncing bar:
 
 ```python
-widgets = [FormatLabel('Bouncer: value %(value)d - '), BouncingBar()]
+widgets = [FormatLabel('Bouncer: value %(value)d - '), 
+BouncingBar()]
 pbar = ProgressBar(widgets=widgets)
 for i in pbar((i for i in range(180))):
     time.sleep(0.05)
@@ -246,35 +250,45 @@ you wanna do a uname :
 ```python
     def uname():
         run("uname -a")
+        sudo("apt-get install puppet")
 ```
 
 then
 
 ```sh
-    fab uname -h boy
+    fab uname -h 192.168.1.1
 ```
 
 ###Push it
-you can define role, that are bunch of server on which to apply rule
-```python
+Pass arguments
 
+```python
+def install_dependencies(package):
+    sudo("apt-get install {}".format(package))
+```
+```sh
+fab install_dependencies:puppet -h 192.168.1.1
 ```
 
+###vagrant example
 pretty simple to use with vagrant 
+
 ```python
-def prod():
 def vagrant():
+    # change from the default user to 'vagrant'
+    env.user = 'vagrant'
+    # connect to the port-forwarded ssh
+    env.hosts = ['127.0.0.1:2222']
+
+    # use vagrant ssh key
+    result = local('vagrant ssh-config 
+| grep IdentityFile', capture=True)
+    env.key_filename = result.split()[1].strip('"')
+    print(env.key_filename)'"')
+
 ```
 
-for test
-
-```sh
-fab vagrant deploy
-```
-
-```sh
-fab prod deploy
-```
+Or EC2 ...
 
 ##Blackmamba
 ###Start it
@@ -317,20 +331,24 @@ a.span.div.div
 * extract text 
 
 ```python
-a.text
+#for a single element
+soup.get_text()
+#or for a single element
+a.string
 ```
 
 ###Push it
 modify dom content
 
 ```python
-dom.text = "Ich bin ein berliner"
+dom.string = "Ich bin ein berliner"
 ```
 
-add a subtree
+manipulate the dom
 
 ```python
-dom.add()
+a = soup.new_tag('a')
+dom.append(a)
 ```
 
 ##SQLAlchemy
@@ -343,6 +361,10 @@ Let's do the connection first
 ```python
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
+#link to the db
+engine = create_engine('sqlite:///sqlalchemy_example.db')
+#create the column
+Base.metadata.create_all(engine)
 ```
 ###and then
 
@@ -364,35 +386,27 @@ class User(Base):
 ```
 very simple example
 
-```python
-#link to the db
-engine = create_engine('sqlite:///sqlalchemy_example.db')
-#create the column
-Base.metadata.create_all(engine)
-```
-
 ###Push it
 * Query
+
 ```python
 session = sessionmaker(bind=engine)()
 session.add(User("john", "waterson", "1234"))
 session.query(User).filter_by(name="leet_admin").first()
 session.query(User).all()
 
-User.query.filter_by(username="leet_admin").first()
-```
-
-* One to one relation
-```python
+User.query.filter_by(name="leet_admin").first()
 ```
 
 ##scapy
 ###Start it
-* packet forging
+* Packet forging
 
 ```python
 #syn flood 101
-syn = TCP(flags='S', dport=80)/IP(ttls=99, dst="192.168.1.1")
+tcp = TCP(flags='S', dport=80)
+ip = IP(ttls=99, dst="192.168.1.1")
+p = tcp/ip
 #send the packet (this won't hurt anyone)
 ans,unans=srloop(p,inter=0.3,retry=2,timeout=4)
 print(ans.summary)
@@ -402,7 +416,7 @@ print(unans.summary)
 * packet generation with range of parameters
 
 ```python
-syn = TCP(flags='S', dport=range(800))/IP(ttls=99, dst="192.168.1.1")
+tcps = TCP(flags='S', dport=range(800))
 ```
 
 ###Push it
@@ -430,6 +444,7 @@ ans.graph()
 ##Arrow
 ###Start it
 * Start from now
+   
 ```python
 now = arrow.utcnow()
 now.date
@@ -439,16 +454,23 @@ assert (now - now) = 0
 ```
 
 * Or another day
+
 ```python
+s = '2013-05-05 12:30:45'
+date = arrow.get(s, 'YYYY-MM-DD HH:mm:ss')
+#date is now <Arrow [2013-05-05T12:30:45+00:00]>
+date.year
 ```
 
 ###Push it
 * humanize is great, to have a relative human readable date
 
 ```python
+now = arrow.utcnow()
+now.humanize()
 ```
 ##Flask
-###
+###Start it
 * Light webframework
 
 ```python
@@ -471,7 +493,7 @@ def index(pin_id, state):
     gpio("write", pin_id, state)
 ```
 
-*pass a db hook
+* Pass a db hook
 
 ```python
 @route("/")
