@@ -47,17 +47,19 @@ doug = Dog("doug")
 json_doug = doug.json
 new_doug = Dog.from_json(json_doug)
 ```
-Of course, this is not safe for everyday use.
 
 ##logging
 ###Start it
 simple logging system
 
 ```python
+logging.log("just a log")
+
 logging.debug("debug message")
 logging.info("info message")
 logging.warning("warning message")
 logging.error("error message")
+logging.critical("critical message")
 ```
 
 You can also set the logging level very simply 
@@ -150,7 +152,7 @@ requests.post(url, payload)
 * Act a bit like a browser
 
 ```python
-with request.Session() as session:
+with requests.Session() as session:
     session.get("http://google.ch")
     #who would like a cookie jar
     #http://docs.python.org/2/library/cookielib.html
@@ -299,26 +301,36 @@ blackmamba.run(request("http://google.ch", 80))
 
 ##Beautifulsoup
 ###Start it
-you don't want to learn to write
+* Get all the link in a page
 
 ```python
-    /*[local-name() = 'root']/*[local-name() = 'elem']
+for a_tag in soup.findAll(a):
+    print a_tag
 ```
 
-* yes that's valid 
-* let\'s replace it with beautiful soup
+* Go trough the children
+
 ```python
+a.span.div.div
 ```
-* much better
+
+* extract text 
+
+```python
+a.text
+```
 
 ###Push it
 modify dom content
+
 ```python
 dom.text = "Ich bin ein berliner"
 ```
 
 add a subtree
+
 ```python
+dom.add()
 ```
 
 ##SQLAlchemy
@@ -335,6 +347,7 @@ Base = declarative_base()
 ###and then
 
 ```python
+from sqlalchemy import Column, String
 class User(Base):
      __tablename__ = 'users'
 
@@ -351,29 +364,72 @@ class User(Base):
 ```
 very simple example
 
+```python
+#link to the db
+engine = create_engine('sqlite:///sqlalchemy_example.db')
+#create the column
+Base.metadata.create_all(engine)
+```
+
 ###Push it
-join
+* Query
+```python
+session = sessionmaker(bind=engine)()
+session.add(User("john", "waterson", "1234"))
+session.query(User).filter_by(name="leet_admin").first()
+session.query(User).all()
 
-one to one 
+User.query.filter_by(username="leet_admin").first()
+```
 
-A lot more in the documentation
+* One to one relation
+```python
+```
+
 ##scapy
 ###Start it
 * packet forging
+
 ```python
-syn = TCP(flags='S')/IP(dst="example.com")
-```
-###Push it
-* Wait and repeat after me 
-```python
+#syn flood 101
+syn = TCP(flags='S', dport=80)/IP(ttls=99, dst="192.168.1.1")
+#send the packet (this won't hurt anyone)
+ans,unans=srloop(p,inter=0.3,retry=2,timeout=4)
+print(ans.summary)
+print(unans.summary)
 ```
 
-* Analyse and replay
+* packet generation with range of parameters
+
 ```python
+syn = TCP(flags='S', dport=range(800))/IP(ttls=99, dst="192.168.1.1")
 ```
+
+###Push it
+* Analyse and replay
+
+```python
+packets = rdpcap("IECache.pcap")
+#then you can use python
+for p in packets:
+    #discard the first 4 bytes
+    f.write(p.load[4:])
+```
+
+
+* traceroute
+
+```python
+ans,unans=traceroute(['google.com'])
+ans.graph()
+```
+
+###Dat traceroute
+\includegraphics[height=6cm]{images/route.png}
 
 ##Arrow
 ###Start it
+* Start from now
 ```python
 now = arrow.utcnow()
 now.date
@@ -381,9 +437,16 @@ now.year
 now.date
 assert (now - now) = 0
 ```
+
+* Or another day
+```python
+```
+
 ###Push it
 * humanize is great, to have a relative human readable date
 
+```python
+```
 ##Flask
 ###
 * Light webframework
@@ -398,17 +461,22 @@ def gre(id)
     return id
 ```
 
-combine with sql alchemy for a simple web app framework.
-
-```python
-@route('/')
-@with_db
-def index(db):
-    return db.select('all')
-```
 
 ###Push it
-Doc is 
+* Take parameter from the url
+
+```python
+@route('/<int:pin_id>/<int:state>')
+def index(pin_id, state):
+    gpio("write", pin_id, state)
+```
+
+*pass a db hook
+
+```python
+@route("/")
+@with_db
+```
 
 ###Push everything
 https://crate.io/
